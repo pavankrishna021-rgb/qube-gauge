@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QUBE GAUGE</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:#000c20;color:#fff;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(237,15,113,0.3);border-radius:10px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes glow{0%,100%{box-shadow:0 0 30px rgba(237,15,113,0.15)}50%{box-shadow:0 0 60px rgba(237,15,113,0.25)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;padding:12px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee}
+.nav-left{display:flex;align-items:center;gap:8px}
+.nav-left span{font-size:9px;color:#999;letter-spacing:0.5px}
+.nav-right{display:flex;gap:24px}
+.nav-right a{text-decoration:none;font-size:13px;font-weight:500;color:#333;transition:color 0.2s}
+.nav-right a:hover{color:#ed0f71}
+
+#landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding-top:60px;background:linear-gradient(145deg,#1a0a2e 0%,#000c20 25%,#091830 55%,#0d1f3c 75%,#000c20 100%)}
+.glow1{position:absolute;top:-15%;left:-12%;width:550px;height:550px;border-radius:50%;background:radial-gradient(circle,rgba(237,15,113,0.12) 0%,transparent 65%);pointer-events:none}
+.glow2{position:absolute;bottom:-12%;right:-8%;width:450px;height:450px;border-radius:50%;background:radial-gradient(circle,rgba(96,150,205,0.08) 0%,transparent 65%);pointer-events:none}
+.deco1{position:absolute;top:18%;left:6%;font-size:36px;color:rgba(255,255,255,0.06);animation:float 7s ease infinite}
+.deco2{position:absolute;top:25%;right:7%;font-size:28px;color:rgba(255,255,255,0.04);animation:float 9s ease infinite 1s}
+.landing-logo{animation:fadeUp 0.8s ease 0.2s both}
+.landing-title{font-size:clamp(32px,5.5vw,58px);font-weight:900;text-align:center;margin:28px 0 14px;animation:fadeUp 0.8s ease 0.4s both}
+.landing-sub{font-size:clamp(15px,2vw,20px);color:#ed0f71;font-weight:600;text-align:center;animation:fadeUp 0.8s ease 0.55s both}
+.landing-desc{font-size:14px;color:rgba(255,255,255,0.4);text-align:center;max-width:520px;line-height:1.7;margin:16px 20px 32px;animation:fadeUp 0.8s ease 0.7s both}
+.landing-btn{padding:14px 38px;border-radius:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#ed0f71,#e8729a);color:#fff;font-size:15px;font-weight:700;font-family:'Outfit',sans-serif;animation:fadeUp 0.8s ease 0.85s both,glow 3s ease infinite;transition:transform 0.2s}
+.landing-btn:hover{transform:translateY(-2px)}
+.landing-footer{position:absolute;bottom:20px;font-size:10px;color:rgba(255,255,255,0.12);letter-spacing:1px;animation:fadeUp 1s ease 1.2s both}
+
+#dashboard{display:none;padding-top:56px}
+.dash-wrap{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:310px;min-height:calc(100vh - 56px);background:rgba(0,8,24,0.97);border-right:1px solid rgba(255,255,255,0.05);overflow-y:auto;flex-shrink:0;padding:18px 16px}
+.main{flex:1;padding:20px 26px;overflow-y:auto;max-height:calc(100vh - 56px);position:relative}
+.main-glow{position:absolute;top:0;left:0;width:350px;height:350px;border-radius:50%;background:radial-gradient(circle,rgba(237,15,113,0.04) 0%,transparent 70%);pointer-events:none}
+
+.sec-label{display:flex;align-items:center;gap:7px;margin:18px 0 9px;padding-bottom:7px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.slider-wrap{margin-bottom:13px}
+.slider-top{display:flex;justify-content:space-between;margin-bottom:3px}
+.slider-top label{font-size:11px;color:rgba(255,255,255,0.55);font-weight:500}
+.slider-top span{font-size:11px;font-weight:700;font-family:'DM Mono',monospace}
+.slider-help{font-size:8px;color:rgba(255,255,255,0.18);margin-top:1px}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 6px rgba(255,255,255,0.25)}
+.sel-wrap{margin-bottom:13px}
+.sel-wrap label{font-size:11px;color:rgba(255,255,255,0.55);font-weight:500;display:block;margin-bottom:3px}
+.sel-wrap select{width:100%;padding:6px 8px;border-radius:7px;font-size:11px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);outline:none;cursor:pointer;-webkit-appearance:none;font-family:'Outfit',sans-serif}
+select option{background:#000c20;color:#fff}
+.name-input{width:100%;padding:7px 9px;border-radius:7px;font-size:11px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.07);color:#fff;outline:none;font-family:'Outfit',sans-serif;margin-bottom:13px}
+
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.card{background:rgba(255,255,255,0.022);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;transition:border-color 0.3s}
+.card:hover{border-color:rgba(255,255,255,0.1)}
+.m-label{font-size:8.5px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.28);margin-bottom:5px}
+.m-value{font-size:28px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-0.5px}
+.m-sub{font-size:8px;color:rgba(255,255,255,0.14);margin-top:2px}
+.m-value-sm{font-size:20px;font-weight:700;font-family:'DM Mono',monospace}
+
+.barrier-item{padding:9px 11px;border-radius:7px;margin-bottom:5px;background:rgba(237,15,113,0.04);border-left:2px solid rgba(237,15,113,0.35)}
+.barrier-name{font-size:11.5px;font-weight:600;color:rgba(255,255,255,0.7)}
+.barrier-detail{font-size:9px;color:#ed0f71;margin-top:2px}
+.barrier-summary{margin-top:10px;padding:9px 11px;border-radius:7px;background:rgba(251,230,57,0.05);border:1px solid rgba(251,230,57,0.1);font-size:10px;color:rgba(255,255,255,0.4);line-height:1.5}
+.insight{padding:7px 10px;border-radius:7px;margin-bottom:4px;font-size:10.5px;color:rgba(255,255,255,0.5);line-height:1.45}
+.insight-pos{background:rgba(96,150,205,0.05);border-left:2px solid rgba(96,150,205,0.35)}
+.insight-warn{background:rgba(251,230,57,0.04);border-left:2px solid rgba(251,230,57,0.3)}
+.insight-neg{background:rgba(237,15,113,0.04);border-left:2px solid rgba(237,15,113,0.3)}
+
+.dash-footer{text-align:center;padding:16px 0;border-top:1px solid rgba(255,255,255,0.04);margin-top:8px}
+.page-footer{background:#f5f5f5;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e0e0e0}
+.page-footer a{text-decoration:none;font-size:12px;font-weight:500;color:#555;margin-left:24px}
+.page-footer-copy{font-size:11px;color:#888}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-left">
+    <svg width="22" height="22"><rect x="0" y="0" width="6" height="6" rx="1" fill="#ed0f71"/><rect x="8" y="0" width="6" height="6" rx="1" fill="#e8729a"/><rect x="16" y="0" width="6" height="6" rx="1" fill="#f0b8c8"/><rect x="0" y="8" width="6" height="6" rx="1" fill="#4a6fa5"/><rect x="8" y="8" width="6" height="6" rx="1" fill="#6096cd"/><rect x="16" y="8" width="6" height="6" rx="1" fill="#98d6fc"/><rect x="0" y="16" width="6" height="6" rx="1" fill="#fbe639"/><rect x="8" y="16" width="6" height="6" rx="1" fill="#6096cd"/></svg>
+    <span>Unseen to Unstoppable</span>
+  </div>
+  <div class="nav-right">
+    <a href="#" onclick="showLanding()">Home</a>
+    <a href="#" onclick="showDashboard()">GAUGE</a>
+    <a href="#">Contact</a>
+  </div>
+</div>
+
+<!-- LANDING PAGE -->
+<div id="landing">
+  <div class="glow1"></div>
+  <div class="glow2"></div>
+  <div class="deco1">&lt;/&gt;</div>
+  <div class="deco2">&#x2B21;</div>
+  <div class="landing-logo">
+    <svg width="152" height="152" viewBox="0 0 152 152">
+      <rect x="0" y="0" width="46" height="46" rx="6" fill="#ed0f71"/>
+      <rect x="52" y="0" width="46" height="46" rx="6" fill="#e8729a"/>
+      <rect x="104" y="0" width="46" height="46" rx="6" fill="#f0b8c8"/>
+      <rect x="0" y="52" width="46" height="46" rx="6" fill="#4a6fa5"/>
+      <rect x="52" y="52" width="46" height="46" rx="6" fill="#6096cd"/>
+      <rect x="104" y="52" width="46" height="46" rx="6" fill="#98d6fc"/>
+      <rect x="0" y="104" width="46" height="46" rx="6" fill="#fbe639"/>
+      <text x="56" y="122" fill="#ffffff" font-size="14" font-weight="400" letter-spacing="4" font-family="'Outfit',sans-serif">T h e</text>
+      <text x="56" y="143" fill="#ffffff" font-size="17" font-weight="800" letter-spacing="3" font-family="'Outfit',sans-serif">Q U B E</text>
+    </svg>
+  </div>
+  <div class="landing-title"><span style="color:#fff">QUBE </span><span style="color:#fbe639">GAUGE</span></div>
+  <div class="landing-sub">Get to know your value</div>
+  <div class="landing-desc">Welcome to the first pit stop on your adventure with the GAUGE Agent, where users embark on a quest to uncover the true value of their potential. In this self-declaration model, each person can choose to share their details or keep them private.</div>
+  <button class="landing-btn" onclick="showDashboard()">&#x1F680; Start Your Journey</button>
+  <div class="landing-footer">GAUGE — Prototype V1.0 | From Unseen to Unstoppable</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dash-wrap">
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+        <svg width="22" height="22"><rect x="0" y="0" width="6" height="6" rx="1" fill="#ed0f71"/><rect x="8" y="0" width="6" height="6" rx="1" fill="#e8729a"/><rect x="16" y="0" width="6" height="6" rx="1" fill="#f0b8c8"/><rect x="0" y="8" width="6" height="6" rx="1" fill="#4a6fa5"/><rect x="8" y="8" width="6" height="6" rx="1" fill="#6096cd"/><rect x="16" y="8" width="6" height="6" rx="1" fill="#98d6fc"/><rect x="0" y="16" width="6" height="6" rx="1" fill="#fbe639"/><rect x="8" y="16" width="6" height="6" rx="1" fill="#6096cd"/></svg>
+        <div><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:2px">The QUBE</div><div style="font-size:12px;font-weight:800;letter-spacing:3px;color:#ed0f71">GAUGE</div></div>
+      </div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.15);margin-bottom:14px">Self Declaration Model</div>
+
+      <input type="text" id="name" class="name-input" placeholder="Enter your full name..." oninput="update()">
+
+      <div class="sec-label" style="color:#ed0f71;border-bottom:1px solid rgba(237,15,113,0.1)">&#x1F464; Identity</div>
+      <div class="slider-wrap"><div class="slider-top"><label>Age</label><span id="age_v" style="color:#ed0f71">30</span></div><input type="range" id="age" min="16" max="70" value="30" oninput="update()"></div>
+      <div class="sel-wrap"><label>Gender</label><select id="gender" onchange="update()"><option value="0">Male</option><option value="1">Female</option><option value="2">Non-binary</option><option value="3">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>Ethnicity</label><select id="ethnicity" onchange="update()"><option value="0">White</option><option value="1">Black / African / Caribbean</option><option value="2">Asian / Asian British</option><option value="3">Mixed / Multiple</option><option value="4">Arab</option><option value="5">Other</option><option value="6">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>Race</label><select id="race" onchange="update()"><option value="0">White British</option><option value="1">White Other</option><option value="2">South Asian</option><option value="3">East Asian</option><option value="4">Black African</option><option value="5">Black Caribbean</option><option value="6">Arab</option><option value="7">Mixed</option><option value="8">Other</option><option value="9">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>Nationality</label><select id="nationality" onchange="update()"><option value="0">UK Citizen</option><option value="1">EU National</option><option value="2">South Asian</option><option value="3">East Asian</option><option value="4">African</option><option value="5">Middle Eastern</option><option value="6">Americas</option><option value="7">Other</option></select></div>
+
+      <div class="sec-label" style="color:#6096cd;border-bottom:1px solid rgba(96,150,205,0.1)">&#x1F9E0; Human Capital</div>
+      <div class="sel-wrap"><label>Education</label><select id="education" onchange="update()"><option value="1">High School</option><option value="2">Diploma</option><option value="3" selected>Bachelors</option><option value="4">Masters</option><option value="5">PhD</option></select></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Experience (years)</label><span id="experience_v" style="color:#6096cd">5</span></div><input type="range" id="experience" min="0" max="30" value="5" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>AI & Tech Skills</label><span id="aiSkills_v" style="color:#6096cd">5</span></div><input type="range" id="aiSkills" min="1" max="10" value="5" oninput="update()"><div class="slider-help">1=None · 10=Expert ML/AI</div></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Certifications</label><span id="certs_v" style="color:#6096cd">2</span></div><input type="range" id="certs" min="0" max="10" value="2" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Learning Rate (/yr)</label><span id="learningRate_v" style="color:#6096cd">8</span></div><input type="range" id="learningRate" min="0" max="20" value="8" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Languages</label><span id="languages_v" style="color:#6096cd">2</span></div><input type="range" id="languages" min="1" max="6" value="2" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>People Managed</label><span id="leadership_v" style="color:#6096cd">0</span></div><input type="range" id="leadership" min="0" max="50" value="0" oninput="update()"></div>
+
+      <div class="sec-label" style="color:#fbe639;border-bottom:1px solid rgba(251,230,57,0.1)">&#x1F4B0; Financial</div>
+      <div class="slider-wrap"><div class="slider-top"><label id="income_label">Income: &#163;35,000</label><span id="income_v" style="color:#fbe639">35000</span></div><input type="range" id="income" min="5000" max="200000" value="35000" step="1000" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label id="savings_label">Savings: 15%</label><span id="savingsRate_v" style="color:#fbe639">15</span></div><input type="range" id="savingsRate" min="0" max="60" value="15" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label id="debt_label">Debt Ratio: 0.3</label><span id="debtRatio_v" style="color:#fbe639">0.3</span></div><input type="range" id="debtRatio" min="0" max="1.5" value="0.3" step="0.05" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Passive Streams</label><span id="passiveIncome_v" style="color:#fbe639">0</span></div><input type="range" id="passiveIncome" min="0" max="5" value="0" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Credit Score</label><span id="creditScore_v" style="color:#fbe639">6</span></div><input type="range" id="creditScore" min="1" max="10" value="6" oninput="update()"><div class="slider-help">1=Poor · 10=Excellent</div></div>
+      <div class="sel-wrap"><label>Business Owner</label><select id="businessOwner" onchange="update()"><option value="0">No</option><option value="1">Yes</option></select></div>
+
+      <div class="sec-label" style="color:#ed0f71;border-bottom:1px solid rgba(237,15,113,0.1)">&#x1F4AA; Psychological</div>
+      <div class="slider-wrap"><div class="slider-top"><label>Grit & Resilience</label><span id="grit_v" style="color:#ed0f71">7</span></div><input type="range" id="grit" min="1" max="10" value="7" oninput="update()"><div class="slider-help">1=Low · 10=Unstoppable</div></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Risk Tolerance</label><span id="riskTolerance_v" style="color:#ed0f71">6</span></div><input type="range" id="riskTolerance" min="1" max="10" value="6" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Emotional Intelligence</label><span id="eq_v" style="color:#ed0f71">6</span></div><input type="range" id="eq" min="1" max="10" value="6" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Delayed Gratification</label><span id="delayedGrat_v" style="color:#ed0f71">6</span></div><input type="range" id="delayedGrat" min="1" max="10" value="6" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Adaptability</label><span id="adaptability_v" style="color:#ed0f71">7</span></div><input type="range" id="adaptability" min="1" max="10" value="7" oninput="update()"></div>
+
+      <div class="sec-label" style="color:#98d6fc;border-bottom:1px solid rgba(152,214,252,0.1)">&#x1F310; Social & Network</div>
+      <div class="slider-wrap"><div class="slider-top"><label>Network Quality</label><span id="network_v" style="color:#98d6fc">6</span></div><input type="range" id="network" min="1" max="10" value="6" oninput="update()"><div class="slider-help">1=Isolated · 10=Decision-makers</div></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Online Presence</label><span id="online_v" style="color:#98d6fc">5</span></div><input type="range" id="online" min="1" max="10" value="5" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Mentor Quality</label><span id="mentor_v" style="color:#98d6fc">5</span></div><input type="range" id="mentor" min="1" max="10" value="5" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Public Speaking</label><span id="speaking_v" style="color:#98d6fc">5</span></div><input type="range" id="speaking" min="1" max="10" value="5" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Referral Rate</label><span id="referral_v" style="color:#98d6fc">5</span></div><input type="range" id="referral" min="1" max="10" value="5" oninput="update()"></div>
+
+      <div class="sec-label" style="color:#6096cd;border-bottom:1px solid rgba(96,150,205,0.1)">&#x1F30D; External & Health</div>
+      <div class="slider-wrap"><div class="slider-top"><label>Physical Health</label><span id="physHealth_v" style="color:#6096cd">7</span></div><input type="range" id="physHealth" min="1" max="10" value="7" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Mental Health</label><span id="mentHealth_v" style="color:#6096cd">7</span></div><input type="range" id="mentHealth" min="1" max="10" value="7" oninput="update()"></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Location</label><span id="location_v" style="color:#6096cd">7</span></div><input type="range" id="location" min="1" max="10" value="7" oninput="update()"><div class="slider-help">1=Limited · 10=London/NYC</div></div>
+      <div class="sel-wrap"><label>Visa Status</label><select id="visa" onchange="update()"><option value="1">Restricted</option><option value="2">Graduate</option><option value="3">Skilled Worker</option><option value="4">Long-term / ILR</option><option value="5" selected>Citizen / PR</option></select></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Industry Demand</label><span id="industryDemand_v" style="color:#6096cd">7</span></div><input type="range" id="industryDemand" min="1" max="10" value="7" oninput="update()"><div class="slider-help">1=Dying · 10=Booming</div></div>
+      <div class="slider-wrap"><div class="slider-top"><label>Geo Mobility</label><span id="geoMobility_v" style="color:#6096cd">6</span></div><input type="range" id="geoMobility" min="1" max="10" value="6" oninput="update()"></div>
+
+      <div class="sec-label" style="color:rgba(255,255,255,0.2);border-bottom:1px solid rgba(255,255,255,0.05)">&#x1F512; Confidential</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.15);margin-bottom:8px;line-height:1.5">Optional. "Prefer not to say" has no impact.</div>
+      <div class="sel-wrap"><label>Substance Use</label><select id="substance" onchange="update()"><option value="0">No history</option><option value="1">Past (recovered)</option><option value="2">Current</option><option value="3">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>HIV Status</label><select id="hiv" onchange="update()"><option value="0">Negative</option><option value="1">Positive</option><option value="2">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>Sex Work</label><select id="sexWork" onchange="update()"><option value="0">No</option><option value="1">Past</option><option value="2">Current</option><option value="3">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>Criminal Record</label><select id="criminal" onchange="update()"><option value="0">None</option><option value="1">Spent</option><option value="2">Unspent</option><option value="3">Prefer not to say</option></select></div>
+      <div class="sel-wrap"><label>Disability</label><select id="disability" onchange="update()"><option value="0">None</option><option value="1">Physical</option><option value="2">Mental</option><option value="3">Both</option><option value="4">Prefer not to say</option></select></div>
+      <div style="height:30px"></div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="main-glow"></div>
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="20" height="20"><rect x="0" y="0" width="6" height="6" rx="1" fill="#ed0f71"/><rect x="7" y="0" width="6" height="6" rx="1" fill="#e8729a"/><rect x="14" y="0" width="6" height="6" rx="1" fill="#f0b8c8"/><rect x="0" y="7" width="6" height="6" rx="1" fill="#4a6fa5"/><rect x="7" y="7" width="6" height="6" rx="1" fill="#6096cd"/><rect x="14" y="7" width="6" height="6" rx="1" fill="#98d6fc"/><rect x="0" y="14" width="6" height="6" rx="1" fill="#fbe639"/><rect x="7" y="14" width="6" height="6" rx="1" fill="#6096cd"/></svg>
+          <div><span style="font-size:17px;font-weight:800;letter-spacing:2px"><span style="color:#fff">QUBE </span><span style="color:#ed0f71">GAUGE</span></span><div style="font-size:9.5px;color:#ed0f71">Get to know your value</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="analyzing" style="font-size:11px;color:rgba(255,255,255,0.4)"></span>
+          <div style="padding:4px 10px;border-radius:14px;font-size:8px;background:rgba(237,15,113,0.1);border:1px solid rgba(237,15,113,0.2);color:#ed0f71;font-weight:600;animation:pulse 3s infinite">&#9679; Live</div>
+        </div>
+      </div>
+
+      <!-- Banner -->
+      <div id="banner" style="background:linear-gradient(135deg,rgba(237,15,113,0.06),rgba(96,150,205,0.04));border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:13px 17px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700">Welcome to <span style="color:#ed0f71">GAUGE</span></div>
+        <div style="font-size:9.5px;color:rgba(255,255,255,0.3);margin-top:2px">Enter your name and details to begin.</div>
+      </div>
+
+      <!-- Score Cards -->
+      <div class="grid4" id="scores"></div>
+      <!-- Income Cards -->
+      <div class="grid3" id="incomes"></div>
+      <!-- Charts -->
+      <div class="grid2">
+        <div class="card"><div class="m-label" style="margin-bottom:10px">Income Trajectory (5 Years)</div><svg id="trajChart" width="100%" height="165" viewBox="0 0 440 165"></svg>
+          <div style="display:flex;gap:14px;justify-content:center;margin-top:4px"><div style="display:flex;align-items:center;gap:4px"><div style="width:14px;height:2px;background:#ed0f71"></div><span style="font-size:8px;color:rgba(255,255,255,0.3)">Actual</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:14px;height:2px;background:#6096cd;opacity:0.5"></div><span style="font-size:8px;color:rgba(255,255,255,0.3)">Potential</span></div></div>
+        </div>
+        <div class="card" style="text-align:center"><div class="m-label">Parameter Profile</div><svg id="radarChart" width="200" height="200" viewBox="0 0 200 200"></svg></div>
+      </div>
+      <!-- Barriers + Insights -->
+      <div class="grid2">
+        <div class="card" id="barriersCard"></div>
+        <div class="card" id="insightsCard"></div>
+      </div>
+      <!-- Footer -->
+      <div class="dash-footer">
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:3px">
+          <svg width="12" height="12"><rect x="0" y="0" width="3" height="3" rx="0.5" fill="#ed0f71"/><rect x="4" y="0" width="3" height="3" rx="0.5" fill="#e8729a"/><rect x="8" y="0" width="3" height="3" rx="0.5" fill="#f0b8c8"/><rect x="0" y="4" width="3" height="3" rx="0.5" fill="#4a6fa5"/><rect x="4" y="4" width="3" height="3" rx="0.5" fill="#6096cd"/><rect x="8" y="4" width="3" height="3" rx="0.5" fill="#98d6fc"/><rect x="0" y="8" width="3" height="3" rx="0.5" fill="#fbe639"/><rect x="4" y="8" width="3" height="3" rx="0.5" fill="#6096cd"/></svg>
+          <span style="font-size:9px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,0.2)">THE QUBE ENTERPRISE</span>
+        </div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.1)">GAUGE — Prototype V1.0 | From Unseen to Unstoppable</div>
+      </div>
+    </div>
+  </div>
+  <!-- Page footer -->
+  <div class="page-footer">
+    <svg width="20" height="20"><rect x="0" y="0" width="6" height="6" rx="1" fill="#ed0f71"/><rect x="7" y="0" width="6" height="6" rx="1" fill="#e8729a"/><rect x="14" y="0" width="6" height="6" rx="1" fill="#f0b8c8"/><rect x="0" y="7" width="6" height="6" rx="1" fill="#4a6fa5"/><rect x="7" y="7" width="6" height="6" rx="1" fill="#6096cd"/><rect x="14" y="7" width="6" height="6" rx="1" fill="#98d6fc"/><rect x="0" y="14" width="6" height="6" rx="1" fill="#fbe639"/><rect x="7" y="14" width="6" height="6" rx="1" fill="#6096cd"/></svg>
+    <div><a href="#">Contact Us</a><a href="#">Code of Conduct</a></div>
+    <div class="page-footer-copy">&copy; 2026 The QUBE Enterprise Limited UK. All rights reserved.</div>
+  </div>
+</div>
+
+<script>
+function showLanding(){document.getElementById('landing').style.display='flex';document.getElementById('dashboard').style.display='none';}
+function showDashboard(){document.getElementById('landing').style.display='none';document.getElementById('dashboard').style.display='block';update();}
+
+function gv(id){return document.getElementById(id).value;}
+function gi(id){return parseInt(gv(id));}
+function gf(id){return parseFloat(gv(id));}
+
+function predict(){
+  var base=gi('income')||1,
+  sk=gi('aiSkills')*0.10+gi('education')*0.05+gi('certs')*0.025+gi('experience')*0.006+gi('learningRate')*0.02+gi('languages')*0.015+gi('leadership')*0.002,
+  ps=gi('grit')*0.035+gi('riskTolerance')*0.015+gi('eq')*0.015+gi('delayedGrat')*0.02+gi('adaptability')*0.015,
+  so=gi('network')*0.04+gi('online')*0.015+gi('mentor')*0.025+gi('speaking')*0.01+gi('referral')*0.015,
+  ex=gi('physHealth')*0.015+gi('mentHealth')*0.02+gi('location')*0.035+gi('industryDemand')*0.03+gi('geoMobility')*0.01,
+  fi=1+gi('savingsRate')*0.004+gi('passiveIncome')*0.03+gi('creditScore')*0.01+gi('businessOwner')*0.15-gf('debtRatio')*0.25,
+  vC={1:0.5,2:0.7,3:0.85,4:0.95,5:1.0}[gi('visa')]||1,
+  age=gi('age'),aF=age<30?0.9+age*0.003:age<50?1.0:1.0-(age-50)*0.01,
+  gen=gi('gender'),gB=gen===0?1:gen===1?0.88:gen===2?0.82:1,
+  eth=gi('ethnicity'),eB=[1,0.85,0.92,0.93,0.83,0.88,1][eth]||1,
+  sub=gi('substance'),suB=[1,0.92,0.65,1][sub]||1,
+  hiv=gi('hiv'),hB=[1,0.88,1][hiv]||1,
+  sw=gi('sexWork'),swB=[1,0.90,0.70,1][sw]||1,
+  cr=gi('criminal'),crB=[1,0.88,0.65,1][cr]||1,
+  dis=gi('disability'),dB=[1,0.88,0.85,0.78,1][dis]||1,
+  merit=1+sk+ps+so+ex,
+  barrier=gB*eB*vC*suB*hB*swB*crB*dB,
+  actual=Math.round(Math.max(5000,Math.min(500000,base*merit*barrier*fi*aF))),
+  potential=Math.round(Math.max(5000,Math.min(500000,base*merit*fi*aF))),
+  aS=Math.min(100,Math.max(0,Math.round((actual/base)*25))),
+  pS=Math.min(100,Math.max(0,Math.round((potential/base)*25))),
+  bI=Math.round((1-barrier)*100),
+  aT=[base],pT=[base];
+  for(var i=1;i<=5;i++){var pr=Math.pow(i/5,0.6);aT.push(Math.round(base+(actual-base)*pr));pT.push(Math.round(base+(potential-base)*pr));}
+  var barriers=[];
+  if(gen===1)barriers.push({n:"Gender Pay Gap",i:"~12% reduction",t:"Systemic"});
+  if(gen===2)barriers.push({n:"Gender Identity Barrier",i:"~18% reduction",t:"Systemic"});
+  if(eth>=1&&eth<=5){var en=["","Ethnicity Gap (Black)","Ethnicity Gap (Asian)","Ethnicity Gap (Mixed)","Ethnicity Gap (Arab)","Ethnicity Gap (Other)"];var ep=["","~15%","~8%","~7%","~17%","~12%"];barriers.push({n:en[eth],i:ep[eth]+" reduction",t:"Systemic"});}
+  if(gi('visa')<=3)barriers.push({n:"Visa Ceiling ("+["","Restricted","Graduate","Skilled Worker"][gi('visa')]+")",i:"~"+[0,50,30,15][gi('visa')]+"% ceiling",t:"Institutional"});
+  if(sub===2)barriers.push({n:"Active Substance Use",i:"~35% reduction",t:"Personal"});
+  if(sub===1)barriers.push({n:"Past Substance Use",i:"~8% reduction",t:"Personal"});
+  if(hiv===1)barriers.push({n:"HIV Discrimination",i:"~12% reduction",t:"Health"});
+  if(sw===2)barriers.push({n:"Current Sex Work",i:"~30% reduction",t:"Personal"});
+  if(sw===1)barriers.push({n:"Past Sex Work Stigma",i:"~10% reduction",t:"Personal"});
+  if(cr===2)barriers.push({n:"Unspent Criminal Record",i:"~35% reduction",t:"Institutional"});
+  if(cr===1)barriers.push({n:"Spent Criminal Record",i:"~12% reduction",t:"Institutional"});
+  if(dis>=1&&dis<=3){var dn=["","Physical Disability","Mental Health Condition","Multiple Disabilities"];var dp=["","~12%","~15%","~22%"];barriers.push({n:dn[dis],i:dp[dis]+" reduction",t:"Health"});}
+  var ins=[];
+  if(gi('aiSkills')>=8)ins.push({icon:"\u2705",text:"AI/Tech skills exceptional \u2014 highest-demand market.",type:"pos"});
+  else if(gi('aiSkills')<5)ins.push({icon:"\u26A1",text:"AI/Tech skills need development \u2014 #3 income driver.",type:"warn"});
+  if(gi('grit')>=8)ins.push({icon:"\u2705",text:"Outstanding resilience \u2014 #1 success predictor.",type:"pos"});
+  if(gi('network')>=8)ins.push({icon:"\u2705",text:"Excellent network \u2014 accelerates growth.",type:"pos"});
+  else if(gi('network')<5)ins.push({icon:"\uD83D\uDCE1",text:"Network limited \u2014 network is net worth.",type:"warn"});
+  if(gi('learningRate')>=12)ins.push({icon:"\u2705",text:"Exceptional learning velocity \u2014 2-3x peer performance.",type:"pos"});
+  if(gi('mentor')>=8)ins.push({icon:"\u2705",text:"Strong mentors \u2014 3-5x growth acceleration.",type:"pos"});
+  if(gi('savingsRate')<10)ins.push({icon:"\uD83D\uDCB8",text:"Low savings \u2014 aim 20%+ for compound growth.",type:"warn"});
+  if(gf('debtRatio')>0.5)ins.push({icon:"\uD83D\uDD34",text:"High debt \u2014 reduction is priority.",type:"neg"});
+  if(gi('online')<4)ins.push({icon:"\uD83D\uDCF1",text:"Weak online presence \u2014 digital brand matters.",type:"warn"});
+  if(gi('mentHealth')<5)ins.push({icon:"\uD83E\uDDE0",text:"Mental health needs attention.",type:"warn"});
+  var tier=aS>=80?"EXCEPTIONAL":aS>=60?"HIGH POTENTIAL":aS>=40?"MODERATE":aS>=20?"DEVELOPING":"AT RISK";
+  return{actual:actual,potential:potential,aS:aS,pS:pS,bI:bI,aT:aT,pT:pT,barriers:barriers,ins:ins,tier:tier,bCost:potential-actual,base:base};
+}
+
+function update(){
+  // Update slider values
+  var sliders=['age','experience','aiSkills','certs','learningRate','languages','leadership','income','savingsRate','debtRatio','passiveIncome','creditScore','grit','riskTolerance','eq','delayedGrat','adaptability','network','online','mentor','speaking','referral','physHealth','mentHealth','location','industryDemand','geoMobility'];
+  sliders.forEach(function(s){var el=document.getElementById(s+'_v');if(el)el.textContent=document.getElementById(s).value;});
+  document.getElementById('income_label').textContent='Income: \u00A3'+parseInt(gv('income')).toLocaleString();
+  document.getElementById('savings_label').textContent='Savings: '+gv('savingsRate')+'%';
+  document.getElementById('debt_label').textContent='Debt Ratio: '+gv('debtRatio');
+  // Update slider backgrounds
+  sliders.forEach(function(s){var el=document.getElementById(s);if(el){var min=parseFloat(el.min),max=parseFloat(el.max),val=parseFloat(el.value);var pct=((val-min)/(max-min))*100;var span=document.getElementById(s+'_v');var color=span?span.style.color:'#98d6fc';el.style.background='linear-gradient(to right,'+color+' '+pct+'%,rgba(255,255,255,0.05) '+pct+'%)';}});
+
+  var name=gv('name');
+  var r=predict();
+  var sC=r.aS>=80?'#ed0f71':r.aS>=60?'#6096cd':r.aS>=40?'#fbe639':'#f87171';
+
+  // Banner
+  var banner=document.getElementById('banner');
+  if(name){
+    banner.innerHTML='<div style="font-size:14px;font-weight:700"><span style="color:#ed0f71">'+name+'</span>\'s Financial Potential Report</div><div style="font-size:9.5px;color:rgba(255,255,255,0.3);margin-top:2px">Real-time assessment across 40 parameters \u2014 powered by ML</div>';
+    document.getElementById('analyzing').innerHTML='Analysing: <span style="color:#ed0f71;font-weight:600">'+name+'</span>';
+  }else{
+    banner.innerHTML='<div style="font-size:13px;font-weight:700">Welcome to <span style="color:#ed0f71">GAUGE</span></div><div style="font-size:9.5px;color:rgba(255,255,255,0.3);margin-top:2px">Enter your name and details to begin.</div>';
+    document.getElementById('analyzing').innerHTML='';
+  }
+
+  // Score cards
+  document.getElementById('scores').innerHTML=[
+    {l:'Actual Score',v:r.aS,s:'/100 \xB7 '+r.tier,c:sC},
+    {l:'Potential Score',v:r.pS,s:'/100 \xB7 Barrier-free',c:'#6096cd'},
+    {l:'Barrier Impact',v:r.bI+'%',s:'Lost to inequality',c:'#fbe639'},
+    {l:'Barrier Cost',v:'\xA3'+Math.round(r.bCost/1000)+'K',s:'Annual loss',c:'#ed0f71'}
+  ].map(function(m){return '<div class="card"><div class="m-label">'+m.l+'</div><div class="m-value" style="color:'+m.c+'">'+m.v+'</div><div class="m-sub">'+m.s+'</div></div>';}).join('');
+
+  // Income cards
+  document.getElementById('incomes').innerHTML=[
+    {l:'Current Income',v:'\xA3'+r.base.toLocaleString(),c:'#fff'},
+    {l:'Predicted (Actual)',v:'\xA3'+r.actual.toLocaleString(),s:(r.actual/r.base).toFixed(1)+'x growth',c:sC},
+    {l:'Predicted (Potential)',v:'\xA3'+r.potential.toLocaleString(),s:(r.potential/r.base).toFixed(1)+'x without barriers',c:'#6096cd'}
+  ].map(function(m){return '<div class="card"><div class="m-label">'+m.l+'</div><div class="m-value-sm" style="color:'+m.c+'">'+m.v+'</div>'+(m.s?'<div class="m-sub">'+m.s+'</div>':'')+'</div>';}).join('');
+
+  // Trajectory chart
+  var maxT=Math.max.apply(null,r.pT)||1;
+  var svg=document.getElementById('trajChart');
+  var h='';
+  for(var i=0;i<4;i++)h+='<line x1="30" y1="'+(18+i*32)+'" x2="420" y2="'+(18+i*32)+'" stroke="rgba(255,255,255,0.025)"/>';
+  // Potential area
+  var pa='M 30 '+(142-(r.pT[0]/maxT)*122);for(var i=0;i<r.pT.length;i++)pa+=' L '+(30+i*78)+' '+(142-(r.pT[i]/maxT)*122);pa+=' L '+(30+5*78)+' 142 L 30 142 Z';
+  h+='<path d="'+pa+'" fill="rgba(96,150,205,0.06)"/>';
+  // Potential line
+  var pl='';for(var i=0;i<r.pT.length;i++)pl+=(i===0?'M':'L')+' '+(30+i*78)+' '+(142-(r.pT[i]/maxT)*122);
+  h+='<path d="'+pl+'" fill="none" stroke="#6096cd" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>';
+  // Actual area
+  var aa='M 30 '+(142-(r.aT[0]/maxT)*122);for(var i=0;i<r.aT.length;i++)aa+=' L '+(30+i*78)+' '+(142-(r.aT[i]/maxT)*122);aa+=' L '+(30+5*78)+' 142 L 30 142 Z';
+  h+='<path d="'+aa+'" fill="rgba(237,15,113,0.08)"/>';
+  // Actual line
+  var al='';for(var i=0;i<r.aT.length;i++)al+=(i===0?'M':'L')+' '+(30+i*78)+' '+(142-(r.aT[i]/maxT)*122);
+  h+='<path d="'+al+'" fill="none" stroke="#ed0f71" stroke-width="2"/>';
+  // Points
+  for(var i=0;i<r.aT.length;i++){var x=30+i*78,y=142-(r.aT[i]/maxT)*122;h+='<circle cx="'+x+'" cy="'+y+'" r="3" fill="#ed0f71" stroke="#000c20" stroke-width="1.5"/>';h+='<text x="'+x+'" y="'+(y-9)+'" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="8" font-family="DM Mono,monospace">\xA3'+Math.round(r.aT[i]/1000)+'K</text>';h+='<text x="'+x+'" y="155" text-anchor="middle" fill="rgba(255,255,255,0.18)" font-size="7.5">'+(i===0?'Now':'Yr '+i)+'</text>';}
+  svg.innerHTML=h;
+
+  // Radar
+  var data=[{l:'AI',v:gi('aiSkills')},{l:'Edu',v:gi('education')*2},{l:'Grit',v:gi('grit')},{l:'Network',v:gi('network')},{l:'Health',v:gi('physHealth')},{l:'Location',v:gi('location')},{l:'Learn',v:Math.min(gi('learningRate'),10)},{l:'Online',v:gi('online')},{l:'Mentor',v:gi('mentor')}];
+  var rSize=200,cx=100,cy=100,rr=72,n=data.length;
+  var rh='';
+  function rpt(i,v){var a=Math.PI*2*i/n-Math.PI/2;var d=v/10*rr;return{x:cx+d*Math.cos(a),y:cy+d*Math.sin(a)};}
+  [2,4,6,8,10].forEach(function(v){var gd='';data.forEach(function(_,i){var p=rpt(i,v);gd+=(i===0?'M':'L')+' '+p.x+' '+p.y;});rh+='<path d="'+gd+' Z" fill="none" stroke="rgba(255,255,255,0.035)"/>';});
+  var fd='';data.forEach(function(d,i){var p=rpt(i,d.v);fd+=(i===0?'M':'L')+' '+p.x+' '+p.y;});
+  rh+='<path d="'+fd+' Z" fill="rgba(237,15,113,0.1)" stroke="#ed0f71" stroke-width="1.5"/>';
+  data.forEach(function(d,i){var p=rpt(i,d.v);rh+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3" fill="#ed0f71" stroke="#000c20" stroke-width="1.5"/>';});
+  data.forEach(function(d,i){var p=rpt(i,12);rh+='<text x="'+p.x+'" y="'+p.y+'" text-anchor="middle" dominant-baseline="middle" fill="rgba(255,255,255,0.35)" font-size="8">'+d.l+'</text>';});
+  document.getElementById('radarChart').innerHTML=rh;
+
+  // Barriers
+  var bc=document.getElementById('barriersCard');
+  var bh='<div class="m-label" style="margin-bottom:8px">Barriers Detected ('+r.barriers.length+')</div>';
+  if(r.barriers.length>0){
+    r.barriers.forEach(function(b){bh+='<div class="barrier-item"><div class="barrier-name">\u26A0\uFE0F '+b.n+'</div><div class="barrier-detail">'+b.i+' \xB7 <span style="color:rgba(255,255,255,0.3)">'+b.t+'</span></div></div>';});
+    bh+='<div class="barrier-summary">\uD83D\uDCA1 <b style="color:#fbe639">Barrier Summary:</b> '+(name||'This person')+' loses <span style="color:#ed0f71;font-weight:700">\xA3'+r.bCost.toLocaleString()+'</span> annually. Without barriers: <span style="color:#6096cd;font-weight:700">\xA3'+r.potential.toLocaleString()+'</span>.</div>';
+  }else{bh+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.25);font-size:11px">\u2705 No barriers detected</div>';}
+  bc.innerHTML=bh;
+
+  // Insights
+  var ic=document.getElementById('insightsCard');
+  var ih='<div class="m-label" style="margin-bottom:8px">Insights ('+r.ins.length+')</div>';
+  if(r.ins.length>0){
+    r.ins.forEach(function(ins){var cls=ins.type==='pos'?'insight-pos':ins.type==='warn'?'insight-warn':'insight-neg';ih+='<div class="insight '+cls+'">'+ins.icon+' '+ins.text+'</div>';});
+  }else{ih+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.25);font-size:11px">Adjust parameters for insights</div>';}
+  ic.innerHTML=ih;
+}
+
+// Initialize
+update();
+</script>
+</body>
+</html>
